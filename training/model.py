@@ -1,8 +1,6 @@
 import torch.nn as nn
 
-
 class CRNN(nn.Module):
-
     def __init__(self, img_channel, img_height, img_width, num_class,
                  map_to_seq_hidden=64, rnn_hidden=256, leaky_relu=False):
         super(CRNN, self).__init__()
