@@ -9,7 +9,7 @@ import glob
 from tqdm import tqdm
 import random
 
-DATASET_PATH = r"C:\Users\User\.cache\doctr\datasets\SynthText\SynthText"
+DATASET_PATH = "./SynthText"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 64
 MODEL_DIR = './model'

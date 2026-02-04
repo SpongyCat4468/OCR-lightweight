@@ -7,7 +7,7 @@ import os
 import glob
 from PIL import Image
 
-DATASET_PATH = r"C:\Users\User\.cache\doctr\datasets\SynthText\SynthText"
+DATASET_PATH = "./SynthText"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 MODEL_DIR = './model'
 INPUT_DIR = './input'
