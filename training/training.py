@@ -10,12 +10,12 @@ import os
 import glob
 from tqdm import tqdm
 
-DATASET_PATH = r"C:\Users\User\.cache\doctr\datasets\SynthText\SynthText"
+DATASET_PATH = "./SynthText"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 128  # Increased from 64 for better gradient estimates
 BATCHES_PER_EPOCH = 2500
 EPOCHS = 100
-MODEL_DIR = '../OCR lightweight/model'
+MODEL_DIR = './model'
 LEARNING_RATE = 0.0005  # Reduced from 0.001
 USE_SCHEDULER = True  # Add learning rate scheduling
 IMG_HEIGHT = 32

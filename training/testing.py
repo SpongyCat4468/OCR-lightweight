@@ -12,7 +12,7 @@ import random
 DATASET_PATH = r"C:\Users\User\.cache\doctr\datasets\SynthText\SynthText"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 64
-MODEL_DIR = '../OCR lightweight/model'
+MODEL_DIR = './model'
 IMG_HEIGHT = 32
 IMG_WIDTH = 128
 

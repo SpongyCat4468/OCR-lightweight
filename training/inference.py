@@ -9,8 +9,8 @@ from PIL import Image
 
 DATASET_PATH = r"C:\Users\User\.cache\doctr\datasets\SynthText\SynthText"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-MODEL_DIR = '../OCR lightweight/model'
-INPUT_DIR = '../OCR lightweight/input'
+MODEL_DIR = './model'
+INPUT_DIR = './input'
 IMG_HEIGHT = 32
 IMG_WIDTH = 128
 
