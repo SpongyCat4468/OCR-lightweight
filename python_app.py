@@ -28,14 +28,14 @@ import training.dataset as dt
 from training.model import CRNN
 
 # Setup
-DATASET_PATH = r"C:\Users\User\.cache\doctr\datasets\SynthText\SynthText"
+DATASET_PATH = "./SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 MODEL_DIR = './model'
 IMG_HEIGHT = 32
 IMG_WIDTH = 128
 
 # Load charset
-temp_dataset = dt.Dataset(DATASET_PATH)
+temp_dataset = dt.CroppedSynthTextDataset(DATASET_PATH)
 charset = CharsetMapper(temp_dataset)
 
 # Load model

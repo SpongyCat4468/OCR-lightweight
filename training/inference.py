@@ -10,7 +10,7 @@ from PIL import Image
 DATASET_PATH = "./SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 MODEL_DIR = './model'
-INPUT_DIR = './input'
+INPUT_DIR = './training/input'
 IMG_HEIGHT = 32
 IMG_WIDTH = 128
 
