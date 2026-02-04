@@ -167,8 +167,13 @@ if __name__ == "__main__":
         current_lr = optimizer.param_groups[0]['lr']
         log_msg = f"Epoch {epoch}/{EPOCHS} - Loss: {train_loss:.4f} - LR: {current_lr:.6f}"
         print(log_msg)
-        with open("training.txt", "a", encoding="utf-8") as f:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        log_path = os.path.join(current_dir, "training.txt")
+
+        with open(log_path, "a", encoding="utf-8") as f:
             f.write(log_msg + "\n")
+            f.flush()
+            os.fsync(f.fileno())
 
         model_path = os.path.join(MODEL_DIR, f'crnn_epoch_{epoch}.pt')
         torch.save(model.state_dict(), model_path)

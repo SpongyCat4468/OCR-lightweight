@@ -69,4 +69,11 @@ def verify_dataset(root_dir, crops_dir):
 
 if __name__ == "__main__":
     # Ensure these paths match your setup
-    verify_dataset('./SynthText', './SynthText_Crops')
+    # verify_dataset('./SynthText', './SynthText_Crops')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    log_path = os.path.join(current_dir, "training.txt")
+
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write("hi\n")
+        f.flush()
+        os.fsync(f.fileno())
