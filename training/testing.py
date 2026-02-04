@@ -9,7 +9,7 @@ import glob
 from tqdm import tqdm
 import random
 
-DATASET_PATH = "./SynthText"
+DATASET_PATH = "./SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 64
 MODEL_DIR = './model'
@@ -122,7 +122,7 @@ def calculate_accuracy(model, dataloader, charset, device):
 
 if __name__ == "__main__":
     print("Loading dataset...")
-    dataset = dt.Dataset(DATASET_PATH)
+    dataset = dt.CroppedSynthTextDataset(DATASET_PATH)
 
     transform = transforms.Compose([
         transforms.Resize((IMG_HEIGHT, IMG_WIDTH)),

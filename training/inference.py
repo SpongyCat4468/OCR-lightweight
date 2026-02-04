@@ -7,7 +7,7 @@ import os
 import glob
 from PIL import Image
 
-DATASET_PATH = "./SynthText"
+DATASET_PATH = "./SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 MODEL_DIR = './model'
 INPUT_DIR = './input'
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     print(f"Found {len(image_paths)} images in {INPUT_DIR}\n")
     
     print("Loading charset...")
-    temp_dataset = dt.Dataset(DATASET_PATH)
+    temp_dataset = dt.CroppedSynthTextDataset(DATASET_PATH)
     charset = CharsetMapper(temp_dataset)
     
     transform = transforms.Compose([

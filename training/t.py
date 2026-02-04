@@ -1,98 +1,72 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
-import dataset as dt
-from charset import CharsetMapper
-from model import CRNN
-from torchvision import transforms
+import os
+import scipy.io
+from PIL import Image
+from tqdm import tqdm
 
-# Use the same constants as your training script
-IMG_HEIGHT = 32
-IMG_WIDTH = 128
-DATASET_PATH = "./SynthText"
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-# Import your CollateFn from your training file or paste it here
-class CollateFn:
-    def __init__(self, charset):
-        self.charset = charset
+def verify_dataset(root_dir, crops_dir):
+    manifest_path = os.path.join(crops_dir, "labels.txt")
     
-    def __call__(self, batch):
-        images, texts = zip(*batch)
-        images = torch.stack(images, 0)
-        text_encoded = [self.charset.encode(text) for text in texts]
-        text_lengths = torch.IntTensor([len(t) for t in text_encoded])
-        max_len = max(text_lengths)
-        text_padded = torch.zeros(len(texts), max_len, dtype=torch.long)
-        for i, encoded in enumerate(text_encoded):
-            text_padded[i, :len(encoded)] = torch.tensor(encoded, dtype=torch.long)
-        return images, text_padded, text_lengths
+    if not os.path.exists(manifest_path):
+        print("❌ Error: labels.txt not found!")
+        return
 
-def find_max_batch_size(dataset, charset, device, start_batch=32, max_batch=1024):
-    batch_size = start_batch
-    best_batch = start_batch
+    # 1. Load the manifest entries
+    print("Reading manifest...")
+    manifest_entries = {}
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split('\t')
+            if len(parts) == 2:
+                manifest_entries[parts[0]] = parts[1]
+
+    print(f"Total entries in manifest: {len(manifest_entries)}")
+
+    # 2. Cross-reference with .mat file (Completeness check)
+    print("Loading .mat file for total count verification...")
+    mat_data = scipy.io.loadmat(os.path.join(root_dir, 'gt.mat'))
+    texts = mat_data['txt'][0]
     
-    # 1. Initialize your specific CollateFn
-    collate_fn = CollateFn(charset)
+    total_expected_words = 0
+    for img_text_array in texts:
+        for line in img_text_array:
+            total_expected_words += len(line.split())
     
-    model = CRNN(img_channel=3, img_height=IMG_HEIGHT, img_width=IMG_WIDTH, 
-                 num_class=charset.num_classes).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    criterion = nn.CTCLoss(blank=0, zero_infinity=True)
-    scaler = torch.amp.GradScaler(enabled=(device.type == 'cuda'))
+    print(f"Total words expected from .mat: {total_expected_words}")
+    print(f"Missing from manifest: {total_expected_words - len(manifest_entries)}")
 
-    print(f"Searching for optimal batch size on {device}...")
-
-    while batch_size <= max_batch:
+    # 3. Physical File Integrity Check (The "Health Scan")
+    print("\nStarting physical file scan (checking for corruption/missing files)...")
+    missing_files = []
+    corrupted_files = []
+    
+    # We check a sample of 10,000 or the whole thing? 
+    # For a full check, we loop through all entries:
+    for img_name in tqdm(manifest_entries.keys(), desc="Checking files"):
+        img_path = os.path.join(crops_dir, img_name)
+        
+        if not os.path.exists(img_path):
+            missing_files.append(img_name)
+            continue
+            
+        # Optional: Deep integrity check (opens the file to check for corruption)
+        # Warning: This makes the script slower. Remove the try/except if you only want to check existence.
         try:
-            # 2. ADDED collate_fn=collate_fn HERE
-            loader = DataLoader(
-                dataset, 
-                batch_size=batch_size, 
-                shuffle=False, 
-                num_workers=2, 
-                collate_fn=collate_fn  # This fix ensures we get 3 values back
-            )
-            
-            # Now this will correctly unpack into 3 variables
-            images, targets, target_lengths = next(iter(loader))
-            images, targets = images.to(device), targets.to(device)
+            with Image.open(img_path) as img:
+                img.verify() # Verify it's a valid image without loading whole pixels
+        except Exception:
+            corrupted_files.append(img_name)
 
-            optimizer.zero_grad()
-            with torch.amp.autocast(device_type='cuda', enabled=(device.type == 'cuda')):
-                outputs = model(images)
-                input_lengths = torch.full((outputs.size(1),), outputs.size(0), dtype=torch.long)
-                loss = criterion(outputs.log_softmax(2), targets, input_lengths, target_lengths)
-            
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
-
-            print(f"Batch size {batch_size} works.")
-            best_batch = batch_size
-            batch_size *= 2 
-            
-        except RuntimeError as e:
-            if "out of memory" in str(e).lower():
-                print(f"Batch size {batch_size} is too large.")
-                torch.cuda.empty_cache()
-                break
-            else:
-                raise e
-                
-    return best_batch
+    # 4. Final Report
+    print("\n--- FINAL REPORT ---")
+    if not missing_files and not corrupted_files:
+        print("✅ SUCCESS: All manifest files exist and are healthy.")
+    else:
+        print(f"⚠️ Found {len(missing_files)} missing files.")
+        print(f"⚠️ Found {len(corrupted_files)} corrupted files.")
+        
+        if missing_files:
+            print(f"First 5 missing: {missing_files[:5]}")
 
 if __name__ == "__main__":
-    # Setup Dataset
-    transform = transforms.Compose([
-        transforms.Resize((IMG_HEIGHT, IMG_WIDTH)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    
-    raw_dataset = dt.Dataset(DATASET_PATH)
-    raw_dataset.transform = transform
-    charset = CharsetMapper(raw_dataset)
-    
-    optimal_batch = find_max_batch_size(raw_dataset, charset, DEVICE)
-    print(f"\nSuggested BATCH_SIZE for your training script: {optimal_batch}")
+    # Ensure these paths match your setup
+    verify_dataset('./SynthText', './SynthText_Crops')

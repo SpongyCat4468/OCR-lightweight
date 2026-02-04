@@ -10,7 +10,7 @@ import os
 import glob
 from tqdm import tqdm
 
-DATASET_PATH = "./SynthText"
+DATASET_PATH = "./SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 1024
 BATCHES_PER_EPOCH = 2500
@@ -105,7 +105,7 @@ def find_latest_checkpoint(model_dir):
     return latest_checkpoint, latest_epoch
 
 if __name__ == "__main__":
-    dataset = dt.Dataset(DATASET_PATH)
+    dataset = dt.CroppedSynthTextDataset(DATASET_PATH)
 
     transform = transforms.Compose([
         transforms.Resize((IMG_HEIGHT, IMG_WIDTH)),
