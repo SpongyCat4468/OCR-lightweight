@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 DATASET_PATH = "./SynthText"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-BATCH_SIZE = 128
+BATCH_SIZE = 1024
 BATCHES_PER_EPOCH = 2500
 EPOCHS = 100
 MODEL_DIR = './model'
