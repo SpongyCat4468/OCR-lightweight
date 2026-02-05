@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 DATASET_PATH = "./SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-BATCH_SIZE = 1024
+BATCH_SIZE = 1024 #
 BATCHES_PER_EPOCH = 2500
 EPOCHS = 100
 MODEL_DIR = './model'
@@ -126,10 +126,10 @@ if __name__ == "__main__":
     # Optimizing DataLoader for speed
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, 
                             collate_fn=collate_fn, num_workers=4, pin_memory=True,
-                            persistent_workers=True)
+                            persistent_workers=True) 
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, 
                         collate_fn=collate_fn, num_workers=4, pin_memory=True,
-                        persistent_workers=True)
+                        persistent_workers=True) 
 
     model = CRNN(
         img_channel=3,
