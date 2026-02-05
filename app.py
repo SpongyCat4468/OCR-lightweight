@@ -155,4 +155,4 @@ if __name__ == "__main__":
     print(f"\nFlask app starting on {DEVICE}")
     print(f"Charset size: {charset.num_classes}")
     print("="*80)
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)

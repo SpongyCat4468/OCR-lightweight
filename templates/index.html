@@ -3,40 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text Recognition</title>
+    <title>圖像轉文字</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
-            <h1>Text Recognition</h1>
+            <h1>圖像辨識</h1>
             
-            <button id="selectImageBtn" class="btn btn-primary">Select Image</button>
+            <button id="selectImageBtn" class="btn btn-primary">上傳圖片</button>
             <input type="file" id="fileInput" accept="image/*" style="display: none;">
             
-            <button id="recognizeBtn" class="btn btn-primary">Recognize Text</button>
+            <button id="recognizeBtn" class="btn btn-primary">辨識文字</button>
             
-            <button id="clearBtn" class="btn btn-secondary">Clear</button>
+            <button id="clearBtn" class="btn btn-secondary">清除</button>
         </div>
         
         <div class="main-content">
             <div class="image-preview-section">
-                <h2>Image Preview</h2>
+                <h2>圖片預覽</h2>
                 <div id="imagePreview" class="preview-box">
-                    <p class="placeholder-text">No image selected</p>
-                    <p class="placeholder-subtext">Click 'Select Image' to get started</p>
+                    <p class="placeholder-text">無選擇圖片</p>
+                    <p class="placeholder-subtext">點擊"上傳圖片"按鈕開始</p>
                 </div>
             </div>
             
             <div class="text-output-section">
                 <div class="output-header">
-                    <h2>Recognized Text</h2>
+                    <h2>辨識出的文字</h2>
                     <div class="button-group">
-                        <button id="copyBtn" class="btn btn-action">Copy</button>
-                        <button id="saveBtn" class="btn btn-action">Save</button>
+                        <button id="copyBtn" class="btn btn-action">複製</button>
+                        <button id="saveBtn" class="btn btn-action">以.txt儲存</button>
                     </div>
                 </div>
-                <textarea id="recognizedText" class="output-box" placeholder="Recognized text will appear here..." readonly></textarea>
+                <textarea id="recognizedText" class="output-box" placeholder="辨識出的文字會出現在這裡..." readonly></textarea>
             </div>
         </div>
     </div>
