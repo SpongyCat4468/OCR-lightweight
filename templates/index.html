@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Recognition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>Text Recognition</h1>
+            
+            <button id="selectImageBtn" class="btn btn-primary">Select Image</button>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            
+            <button id="recognizeBtn" class="btn btn-primary">Recognize Text</button>
+            
+            <button id="clearBtn" class="btn btn-secondary">Clear</button>
+        </div>
+        
+        <div class="main-content">
+            <div class="image-preview-section">
+                <h2>Image Preview</h2>
+                <div id="imagePreview" class="preview-box">
+                    <p class="placeholder-text">No image selected</p>
+                    <p class="placeholder-subtext">Click 'Select Image' to get started</p>
+                </div>
+            </div>
+            
+            <div class="text-output-section">
+                <div class="output-header">
+                    <h2>Recognized Text</h2>
+                    <div class="button-group">
+                        <button id="copyBtn" class="btn btn-action">Copy</button>
+                        <button id="saveBtn" class="btn btn-action">Save</button>
+                    </div>
+                </div>
+                <textarea id="recognizedText" class="output-box" placeholder="Recognized text will appear here..." readonly></textarea>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <span id="statusText">Ready</span>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

@@ -111,11 +111,7 @@ def recognize_text_from_image(image):
         # Decode
         recognized_text = decode_prediction(outputs, charset)
         
-        result = f"""✓ Image processed successfully!
-
-Image Size: {image.size}
-Image Mode: {image.mode}
-Device: {DEVICE}
+        result = f"""
 
 Recognized Text:
 {recognized_text}"""
@@ -124,6 +120,7 @@ Recognized Text:
         
     except Exception as e:
         return f"Error during recognition: {str(e)}"
+
 
 
 class TextRecognitionApp(ctk.CTk):
