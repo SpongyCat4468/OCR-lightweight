@@ -11,9 +11,9 @@ from torchvision import transforms
 app = Flask(__name__)
 
 # Configure upload folder
-UPLOAD_FOLDER = './uploads'
-DATASET_PATH = "./SynthText_Crops"
-MODEL_DIR = './model'
+UPLOAD_FOLDER = r'C:\Users\User\Desktop\Coding\Python\PyTorch\OCR lightweight\uploads'
+DATASET_PATH = r'C:\Users\User\Desktop\Coding\Python\PyTorch\OCR lightweight\SynthText_Crops'
+MODEL_DIR = r'C:\Users\User\Desktop\Coding\Python\PyTorch\OCR lightweight\model'
 
 IMG_HEIGHT = 32
 IMG_WIDTH = 128
