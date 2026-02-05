@@ -56,28 +56,31 @@ function handleRecognizeText() {
     updateStatus('Recognizing text...');
     recognizeBtn.disabled = true;
     
-    // Simulate OCR processing with a delay
-    setTimeout(() => {
-        // This is a simulation. In a real application, you would:
-        // 1. Use an OCR library like Tesseract.js
-        // 2. Send the image to a backend API for processing
-        // 3. Use a cloud OCR service
-        
-        const simulatedText = `This is simulated text recognition.
-
-To implement real OCR, you can use:
-- Tesseract.js for client-side OCR
-- Google Cloud Vision API
-- AWS Textract
-- Azure Computer Vision
-
-The selected image has been loaded successfully.
-Add your OCR implementation here to extract actual text from images.`;
-        
-        recognizedText.value = simulatedText;
-        updateStatus('Text recognition complete');
+    // Create FormData to send the image to the backend
+    const formData = new FormData();
+    formData.append('image', selectedImage);
+    
+    // Send POST request to Flask backend
+    fetch('/recognize', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            updateStatus('Error: ' + data.error);
+            recognizedText.value = 'Error occurred during text recognition.';
+        } else {
+            recognizedText.value = data.text;
+            updateStatus('Text recognition complete');
+        }
         recognizeBtn.disabled = false;
-    }, 1500);
+    })
+    .catch(error => {
+        updateStatus('Error: ' + error.message);
+        recognizedText.value = 'Failed to recognize text.';
+        recognizeBtn.disabled = false;
+    });
 }
 
 // Handle Clear
