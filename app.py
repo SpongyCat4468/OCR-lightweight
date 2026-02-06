@@ -28,8 +28,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # ========== LOAD MODEL AND CHARSET ONCE AT STARTUP ==========
 print("Loading charset...")
-temp_dataset = dt.CroppedSynthTextDataset(DATASET_PATH)
-charset = CharsetMapper(temp_dataset)
+charset = CharsetMapper.load("alphabet.json")
 
 print("Initializing model...")
 model = CRNN(
