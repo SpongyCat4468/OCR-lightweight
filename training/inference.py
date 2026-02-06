@@ -77,11 +77,11 @@ class AlignCollate:
         
         # 2. Limit the width to the max width (IMG_WIDTH)
         new_w = min(new_w, self.img_width)
-        img = image.resize((new_w, self.img_height), image.BILINEAR)
+        img = image.resize((new_w, self.img_height), Image.BILINEAR)
         
         # 3. Create a canvas (padding)
         # Using 127.5 (gray) or 0 (black) is standard
-        final_img = image.new('RGB', (self.img_width, self.img_height), (0, 0, 0))
+        final_img = Image.new('RGB', (self.img_width, self.img_height), (0, 0, 0))
         final_img.paste(img, (0, 0)) # Paste at top-left
         
         return final_img
@@ -109,8 +109,10 @@ if __name__ == "__main__":
     
     aligner = AlignCollate(img_height=IMG_HEIGHT, img_width=IMG_WIDTH)
 
+    aligner = AlignCollate(img_height=IMG_HEIGHT, img_width=IMG_WIDTH)
+
     transform = transforms.Compose([
-        transforms.Lambda(lambda x: aligner(x)), # Maintains aspect ratio + Pads
+        aligner,  # Direct call to the object's __call__ method
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                             std=[0.229, 0.224, 0.225])

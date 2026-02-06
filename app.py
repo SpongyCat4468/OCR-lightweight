@@ -44,10 +44,11 @@ def find_latest_checkpoint(model_dir):
     checkpoints = glob.glob(os.path.join(model_dir, 'crnn_epoch_*.pt'))
     if not checkpoints:
         return None, 0
-    
+    '''
     base = glob.glob(os.path.join(model_dir, 'crnn_epoch_base.pt'))
     if base:
         return os.path.join(model_dir, 'crnn_epoch_base.pt'), 'base'
+    '''
     
     epochs = [int(f.split('_')[-1].split('.')[0]) for f in checkpoints]
     
