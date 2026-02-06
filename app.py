@@ -45,10 +45,12 @@ def find_latest_checkpoint(model_dir):
     if not checkpoints:
         return None, 0
     
-    epochs = [int(f.split('_')[-1].split('.')[0]) for f in checkpoints]
     base = glob.glob(os.path.join(model_dir, 'crnn_epoch_base.pt'))
     if base:
         return os.path.join(model_dir, 'crnn_epoch_base.pt'), 'base'
+    
+    epochs = [int(f.split('_')[-1].split('.')[0]) for f in checkpoints]
+    
     latest_epoch = max(epochs)
     latest_checkpoint = os.path.join(model_dir, f'crnn_epoch_{latest_epoch}.pt')
     
