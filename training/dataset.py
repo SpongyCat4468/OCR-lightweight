@@ -3,6 +3,7 @@ import scipy.io
 from PIL import Image
 from torch.utils.data import Dataset
 from tqdm import tqdm
+import torch
 
 class Dataset(Dataset):
     """Dataset that loads all available SynthText data with minimal filtering"""
@@ -89,6 +90,45 @@ class CroppedSynthTextDataset(Dataset):
         except:
             # If an image is missing, return a blank one to avoid crashing the batch
             image = Image.new('RGB', (128, 32), color='white')
+            
+        if self.transform:
+            image = self.transform(image)
+            
+        return image, sample['text']
+    
+import scipy.io as sio
+from PIL import Image
+
+class IIIT5KDataset(torch.utils.data.Dataset):
+    def __init__(self, root_dir, mode='train', transform=None):
+        self.root_dir = root_dir
+        self.transform = transform
+        
+        # Load the MATLAB labels
+        mat_file = 'traindata.mat' if mode == 'train' else 'testdata.mat'
+        data = sio.loadmat(os.path.join(root_dir, mat_file))
+        
+        self.samples = []
+        # Unpack the nested structure of IIIT5K
+        raw_data = data[mode + 'data'][0]
+        for item in raw_data:
+            img_path = item[0][0]
+            label = item[1][0]
+            # Add to list
+            self.samples.append({'path': img_path, 'text': label})
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        sample = self.samples[idx]
+        img_path = os.path.join(self.root_dir, sample['path'])
+        
+        try:
+            image = Image.open(img_path).convert('RGB')
+        except:
+            # Handle rare corrupted images
+            return self.__getitem__((idx + 1) % len(self))
             
         if self.transform:
             image = self.transform(image)
