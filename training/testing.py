@@ -9,7 +9,7 @@ import glob
 from tqdm import tqdm
 import random
 
-DATASET_PATH = "./SynthText_Crops"
+DATASET_PATH = "./IIIT5K"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 64
 MODEL_DIR = './model'
@@ -33,6 +33,28 @@ class CollateFn:
             text_padded[i, :len(encoded)] = torch.LongTensor(encoded)
         
         return images, text_padded, text_lengths
+
+class AlignCollate:
+    def __init__(self, img_height=32, img_width=128):
+        self.img_height = img_height
+        self.img_width = img_width
+
+    def __call__(self, image):
+        # 1. Calculate new width maintaining aspect ratio
+        w, h = image.size
+        aspect_ratio = w / h
+        new_w = int(self.img_height * aspect_ratio)
+        
+        # 2. Limit the width to the max width (IMG_WIDTH)
+        new_w = min(new_w, self.img_width)
+        img = image.resize((new_w, self.img_height), image.BILINEAR)
+        
+        # 3. Create a canvas (padding)
+        # Using 127.5 (gray) or 0 (black) is standard
+        final_img = image.new('RGB', (self.img_width, self.img_height), (0, 0, 0))
+        final_img.paste(img, (0, 0)) # Paste at top-left
+        
+        return final_img
 
 def decode_predictions(outputs, charset):
     """Decode CTC outputs to text. outputs: (seq_len, batch, num_class)"""
@@ -122,13 +144,15 @@ def calculate_accuracy(model, dataloader, charset, device):
 
 if __name__ == "__main__":
     print("Loading dataset...")
-    dataset = dt.CroppedSynthTextDataset(DATASET_PATH)
+    dataset = dt.IIIT5KDataset(DATASET_PATH)
+
+    aligner = AlignCollate(img_height=IMG_HEIGHT, img_width=IMG_WIDTH)
 
     transform = transforms.Compose([
-        transforms.Resize((IMG_HEIGHT, IMG_WIDTH)),
+        transforms.Lambda(lambda x: aligner(x)), # Maintains aspect ratio + Pads
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                        std=[0.229, 0.224, 0.225])
+                            std=[0.229, 0.224, 0.225])
     ])
 
     dataset.transform = transform

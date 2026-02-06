@@ -104,18 +104,30 @@ class IIIT5KDataset(torch.utils.data.Dataset):
         self.root_dir = root_dir
         self.transform = transform
         
-        # Load the MATLAB labels
+        # Determine which MAT file to load
         mat_file = 'traindata.mat' if mode == 'train' else 'testdata.mat'
-        data = sio.loadmat(os.path.join(root_dir, mat_file))
+        mat_path = os.path.join(root_dir, mat_file)
+        
+        if not os.path.exists(mat_path):
+            raise FileNotFoundError(f"Could not find {mat_path}. Check your extraction path!")
+
+        # Load the MATLAB labels
+        data = sio.loadmat(mat_path)
         
         self.samples = []
-        # Unpack the nested structure of IIIT5K
+        # Unpack the nested structure: data['traindata'] is a (1, N) array
         raw_data = data[mode + 'data'][0]
+        
         for item in raw_data:
-            img_path = item[0][0]
-            label = item[1][0]
-            # Add to list
+            img_path = item[0][0]  # Extracts string from nested array
+            label = item[1][0]     # Extracts label string
+            
+            # Keep original case, just remove potential stray whitespace
+            label = str(label).strip()
+            
             self.samples.append({'path': img_path, 'text': label})
+        
+        print(f"Loaded IIIT5K {mode} set: {len(self.samples)} samples.")
 
     def __len__(self):
         return len(self.samples)
@@ -126,8 +138,9 @@ class IIIT5KDataset(torch.utils.data.Dataset):
         
         try:
             image = Image.open(img_path).convert('RGB')
-        except:
-            # Handle rare corrupted images
+        except Exception as e:
+            # If an image fails to load, grab the next one to keep the batch alive
+            print(f"Warning: Could not load {img_path}. Skipping.")
             return self.__getitem__((idx + 1) % len(self))
             
         if self.transform:

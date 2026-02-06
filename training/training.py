@@ -13,7 +13,7 @@ import torchvision.transforms.functional as F
 
 DATASET_PATH = "./IIIT5K"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-BATCH_SIZE = 1024 #
+BATCH_SIZE = 128 #
 EPOCHS = 100
 MODEL_DIR = './model'
 LEARNING_RATE = 0.00005
@@ -147,9 +147,9 @@ if __name__ == "__main__":
     ])
 
     dataset.transform = transform
-    charset = CharsetMapper(dataset)
+    charset = CharsetMapper.load("alphabet.json")
 
-    train_size = int(0.95 * len(dataset))
+    train_size = int(0.9 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
@@ -172,8 +172,17 @@ if __name__ == "__main__":
         num_class=charset.num_classes
     ).to(DEVICE)
     
+    if hasattr(model, 'cnn'):
+        for param in model.cnn.parameters():
+            param.requires_grad = False
+        print("CNN layers have been frozen. Only RNN and Classifier will train.")
+        
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    # Only pass parameters that have requires_grad = True
+    optimizer = optim.Adam(
+        filter(lambda p: p.requires_grad, model.parameters()), 
+        lr=LEARNING_RATE
+    )
     
     # AMP: Initialize GradScaler
     scaler = torch.amp.GradScaler(enabled=(DEVICE.type == 'cuda'))
@@ -189,6 +198,8 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load(checkpoint_path))
     else:
         start_epoch = 0
+
+    
 
     for epoch in range(start_epoch + 1, EPOCHS + 1):
         # Pass scaler to train_epoch

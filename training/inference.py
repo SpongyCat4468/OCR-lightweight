@@ -7,7 +7,7 @@ import os
 import glob
 from PIL import Image
 
-DATASET_PATH = "./SynthText_Crops"
+DATASET_PATH = "./IIIT5K"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 MODEL_DIR = './model'
 INPUT_DIR = './training/input'
@@ -64,6 +64,28 @@ def process_images(model, image_paths, transform, charset, device):
             except Exception as e:
                 print(f"Error processing {img_path}: {str(e)}")
 
+class AlignCollate:
+    def __init__(self, img_height=32, img_width=128):
+        self.img_height = img_height
+        self.img_width = img_width
+
+    def __call__(self, image):
+        # 1. Calculate new width maintaining aspect ratio
+        w, h = image.size
+        aspect_ratio = w / h
+        new_w = int(self.img_height * aspect_ratio)
+        
+        # 2. Limit the width to the max width (IMG_WIDTH)
+        new_w = min(new_w, self.img_width)
+        img = image.resize((new_w, self.img_height), image.BILINEAR)
+        
+        # 3. Create a canvas (padding)
+        # Using 127.5 (gray) or 0 (black) is standard
+        final_img = image.new('RGB', (self.img_width, self.img_height), (0, 0, 0))
+        final_img.paste(img, (0, 0)) # Paste at top-left
+        
+        return final_img
+
 if __name__ == "__main__":
     os.makedirs(INPUT_DIR, exist_ok=True)
     
@@ -82,14 +104,16 @@ if __name__ == "__main__":
     print(f"Found {len(image_paths)} images in {INPUT_DIR}\n")
     
     print("Loading charset...")
-    temp_dataset = dt.CroppedSynthTextDataset(DATASET_PATH)
+    temp_dataset = dt.IIIT5KDataset(DATASET_PATH)
     charset = CharsetMapper(temp_dataset)
     
+    aligner = AlignCollate(img_height=IMG_HEIGHT, img_width=IMG_WIDTH)
+
     transform = transforms.Compose([
-        transforms.Resize((IMG_HEIGHT, IMG_WIDTH)),
+        transforms.Lambda(lambda x: aligner(x)), # Maintains aspect ratio + Pads
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                        std=[0.229, 0.224, 0.225])
+                            std=[0.229, 0.224, 0.225])
     ])
     
     model = CRNN(
