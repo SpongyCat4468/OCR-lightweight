@@ -16,9 +16,9 @@ from PIL import Image
 DATASET_PATH = "./IIIT5K"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 128 
-EPOCHS = 50          # Increased for full fine-tuning
+EPOCHS = 100      # Increased for full fine-tuning
 MODEL_DIR = './model'
-LEARNING_RATE = 0.00001  # Lowered for full model training
+LEARNING_RATE = 0.000005 # Lowered for full model training
 USE_SCHEDULER = True
 IMG_HEIGHT = 32
 IMG_WIDTH = 128

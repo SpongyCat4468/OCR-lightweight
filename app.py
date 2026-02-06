@@ -76,24 +76,23 @@ transform = transforms.Compose([
 # ============================================================
 
 def decode_predictions(outputs, charset):
-    outputs = outputs.permute(1, 0, 2)  # (batch, seq_len, num_class)
+    # outputs: (seq_len, batch, num_class)
+    outputs = outputs.permute(1, 0, 2)
     predictions = []
     
     for output in outputs:
-        probs = torch.softmax(output, dim=1)
-        pred_indices = torch.argmax(probs, dim=1)
+        # Get the most likely index for each time step
+        pred_indices = output.argmax(dim=1).tolist()
         
         decoded_chars = []
-        prev_idx = -1 # Initialize with a value that isn't a valid index
+        prev_idx = -1
         
         for idx in pred_indices:
-            idx = idx.item()
-            # CTC Logic: 
-            # 1. Ignore the blank token (0)
-            # 2. Ignore repeated characters UNLESS separated by a blank
-            if idx != 0:
-                if idx != prev_idx:
-                    decoded_chars.append(charset.chars[idx - 1]) # Adjust for 0-index blank
+            # 0 is the CTC Blank token
+            if idx != 0 and idx != prev_idx:
+                # charset.chars is a list, so index 0 of chars is the 1st actual letter
+                # (since blank is handled separately)
+                decoded_chars.append(charset.chars[idx - 1])
             prev_idx = idx
             
         predictions.append("".join(decoded_chars))
