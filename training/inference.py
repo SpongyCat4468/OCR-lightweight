@@ -1,4 +1,4 @@
-import torch
+'''import torch
 from torchvision import transforms
 from charset import CharsetMapper
 import dataset as dt
@@ -140,4 +140,49 @@ if __name__ == "__main__":
     
     process_images(model, image_paths, transform, charset, DEVICE)
     
-    print("="*80)
+    print("="*80)'''
+
+import torch
+from PIL import Image
+import dataset as dt
+from model import CRNN
+from charset import CharsetMapper
+from training import AlignCollate, IMG_HEIGHT, IMG_WIDTH
+import matplotlib.pyplot as plt
+
+def test_single_image(model_path, image_path, charset):
+    # 1. Setup Model
+    model = CRNN(3, IMG_HEIGHT, IMG_WIDTH, charset.num_classes).to('cuda')
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
+
+    # 2. Preprocess Image
+    aligner = AlignCollate(IMG_HEIGHT, IMG_WIDTH)
+    image = Image.open(image_path).convert('RGB')
+    input_tensor = aligner(image)
+    
+    # Show the padded image so you see what the model sees
+    plt.imshow(input_tensor)
+    plt.show()
+
+    # To Tensor and Normalize
+    from torchvision import transforms
+    t = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    input_tensor = t(input_tensor).unsqueeze(0).to('cuda')
+
+    # 3. Predict
+    with torch.no_grad():
+        logits = model(input_tensor)
+        # logits shape: [T, Batch, Num_Classes]
+        probs = logits.softmax(2).argmax(2).squeeze(1).tolist()
+        
+    # 4. Decode
+    prediction = charset.decode(probs)
+    print(f"Predicted Text: {prediction}")
+
+# Run the test
+charset = CharsetMapper.load("alphabet.json")
+test_single_image("./model/crnn_epoch_50.pt", "./IIIT5K/test/1_1.png", charset)

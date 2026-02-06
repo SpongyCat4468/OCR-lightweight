@@ -129,4 +129,7 @@ the new real-world textures.Learning Rate: Drop it from 0.0005 to 0.00005. High 
 Step 5: 
 The Validation/Test SplitAs we discussed, IIIT-5K gives you 2,000 training images and 3,000 test images.Action: Take 200 
 images out of that training set to use as your "Validation" set.Why: You need a way to tell if the model is actually getting 
-better or just memorizing the small IIIT-5K training pool.
+better or just memorizing the small IIIT-5K training pool.Epoch 2/5 - Loss: 10.0963 - LR: 0.000050
+Epoch 3/5 - Loss: 7.3081 - LR: 0.000050
+Epoch 4/5 - Loss: 5.4957 - LR: 0.000050
+Epoch 5/5 - Loss: 4.0830 - LR: 0.000050
