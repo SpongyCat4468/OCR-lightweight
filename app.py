@@ -76,24 +76,27 @@ transform = transforms.Compose([
 # ============================================================
 
 def decode_predictions(outputs, charset):
-    """Decode CTC outputs to text. outputs: (seq_len, batch, num_class)"""
-    predictions = []
     outputs = outputs.permute(1, 0, 2)  # (batch, seq_len, num_class)
+    predictions = []
     
     for output in outputs:
-        pred_indices = output.argmax(dim=1)
+        probs = torch.softmax(output, dim=1)
+        pred_indices = torch.argmax(probs, dim=1)
         
-        decoded = []
-        prev_idx = None
+        decoded_chars = []
+        prev_idx = -1 # Initialize with a value that isn't a valid index
+        
         for idx in pred_indices:
             idx = idx.item()
-            if idx != 0 and idx != prev_idx:  # 0 is blank token in CTC
-                decoded.append(idx)
+            # CTC Logic: 
+            # 1. Ignore the blank token (0)
+            # 2. Ignore repeated characters UNLESS separated by a blank
+            if idx != 0:
+                if idx != prev_idx:
+                    decoded_chars.append(charset.chars[idx - 1]) # Adjust for 0-index blank
             prev_idx = idx
-        
-        text = charset.decode(decoded)
-        predictions.append(text)
-    
+            
+        predictions.append("".join(decoded_chars))
     return predictions
 
 def image_to_text(image):

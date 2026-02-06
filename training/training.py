@@ -52,7 +52,8 @@ class AlignCollate:
         new_w = min(new_w, self.img_width)
         img = image.resize((new_w, self.img_height), Image.BILINEAR)
         final_img = Image.new('RGB', (self.img_width, self.img_height), (0, 0, 0))
-        final_img.paste(img, (0, 0))
+        left_pad = (self.img_width - new_w) // 2
+        final_img.paste(img, (left_pad, 0))
         return final_img
 
 # ... [train_epoch and find_latest_checkpoint remain the same] ...
@@ -101,6 +102,10 @@ if __name__ == "__main__":
 
     transform = transforms.Compose([
         aligner,
+        # Add these three for "Robustness"
+        transforms.ColorJitter(brightness=0.2, contrast=0.2), # Handles lighting
+        transforms.RandomGrayscale(p=0.1),                   # Handles color fading
+        transforms.RandomAffine(degrees=2, translate=(0.02, 0.02), scale=(0.98, 1.02)), # Handles tilts
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])

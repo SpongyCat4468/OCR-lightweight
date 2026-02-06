@@ -35,26 +35,21 @@ class CollateFn:
         
         return images, text_padded, text_lengths
 
+
 class AlignCollate:
     def __init__(self, img_height=32, img_width=128):
         self.img_height = img_height
         self.img_width = img_width
 
     def __call__(self, image):
-        # 1. Calculate new width maintaining aspect ratio
         w, h = image.size
         aspect_ratio = w / h
         new_w = int(self.img_height * aspect_ratio)
-        
-        # 2. Limit the width to the max width (IMG_WIDTH)
         new_w = min(new_w, self.img_width)
-        img = image.resize((new_w, self.img_height), image.BILINEAR)
-        
-        # 3. Create a canvas (padding)
-        # Using 127.5 (gray) or 0 (black) is standard
+        img = image.resize((new_w, self.img_height), Image.BILINEAR)
         final_img = Image.new('RGB', (self.img_width, self.img_height), (0, 0, 0))
-        final_img.paste(img, (0, 0)) # Paste at top-left
-        
+        left_pad = (self.img_width - new_w) // 2
+        final_img.paste(img, (left_pad, 0))
         return final_img
 
 def decode_predictions(outputs, charset):
