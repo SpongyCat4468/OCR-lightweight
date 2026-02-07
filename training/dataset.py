@@ -4,10 +4,10 @@ from PIL import Image
 from torch.utils.data import Dataset
 from tqdm import tqdm
 import torch
+import scipy.io as sio
+from PIL import Image
 
 class Dataset(Dataset):
-    """Dataset that loads all available SynthText data with minimal filtering"""
-    
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
@@ -88,41 +88,36 @@ class CroppedSynthTextDataset(Dataset):
         try:
             image = Image.open(img_path).convert('RGB')
         except:
-            # If an image is missing, return a blank one to avoid crashing the batch
+            # None -> blank
             image = Image.new('RGB', (128, 32), color='white')
             
         if self.transform:
             image = self.transform(image)
             
         return image, sample['text']
-    
-import scipy.io as sio
-from PIL import Image
+
 
 class IIIT5KDataset(torch.utils.data.Dataset):
     def __init__(self, root_dir, mode='train', transform=None):
         self.root_dir = root_dir
         self.transform = transform
         
-        # Determine which MAT file to load
         mat_file = 'traindata.mat' if mode == 'train' else 'testdata.mat'
         mat_path = os.path.join(root_dir, mat_file)
         
         if not os.path.exists(mat_path):
-            raise FileNotFoundError(f"Could not find {mat_path}. Check your extraction path!")
+            raise FileNotFoundError(f"Could not find {mat_path}.")
 
-        # Load the MATLAB labels
         data = sio.loadmat(mat_path)
         
         self.samples = []
-        # Unpack the nested structure: data['traindata'] is a (1, N) array
+        # data['traindata'] -> (1, N) array
         raw_data = data[mode + 'data'][0]
         
         for item in raw_data:
-            img_path = item[0][0]  # Extracts string from nested array
-            label = item[1][0]     # Extracts label string
+            img_path = item[0][0]  # string in nested array
+            label = item[1][0]     # label string
             
-            # Keep original case, just remove potential stray whitespace
             label = str(label).strip()
             
             self.samples.append({'path': img_path, 'text': label})
@@ -139,8 +134,7 @@ class IIIT5KDataset(torch.utils.data.Dataset):
         try:
             image = Image.open(img_path).convert('RGB')
         except Exception as e:
-            # If an image fails to load, grab the next one to keep the batch alive
-            print(f"Warning: Could not load {img_path}. Skipping.")
+            print(f"Could not load {img_path}.")
             return self.__getitem__((idx + 1) % len(self))
             
         if self.transform:

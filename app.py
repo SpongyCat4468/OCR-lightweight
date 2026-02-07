@@ -10,8 +10,7 @@ from torchvision import transforms
 
 app = Flask(__name__)
 
-# Configure upload folder
-UPLOAD_FOLDER = r'C:\Users\User\Desktop\Coding\Python\PyTorch\OCR lightweight\uploads'
+UPLOAD_FOLDER = r'C:\Users\User\Desktop\Coding\Python\PyTorch\OCR lightweight\upload'
 DATASET_PATH = r'C:\Users\User\Desktop\Coding\Python\PyTorch\OCR lightweight\SynthText_Crops'
 MODEL_DIR = r'C:\Users\User\Desktop\Coding\Python\PyTorch\OCR lightweight\model'
 
@@ -24,9 +23,8 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
-# ========== LOAD MODEL AND CHARSET ONCE AT STARTUP ==========
 print("Loading charset...")
 charset = CharsetMapper.load("alphabet.json")
 
@@ -38,23 +36,18 @@ model = CRNN(
     num_class=charset.num_classes
 ).to(DEVICE)
 
-# Find and load the latest checkpoint
 def find_latest_checkpoint(model_dir):
     checkpoints = glob.glob(os.path.join(model_dir, 'crnn_epoch_*.pt'))
     if not checkpoints:
-        return None, 0
-    '''
-    base = glob.glob(os.path.join(model_dir, 'crnn_epoch_base.pt'))
-    if base:
-        return os.path.join(model_dir, 'crnn_epoch_base.pt'), 'base'
-    '''
+        return None, 0 
     
     epochs = [int(f.split('_')[-1].split('.')[0]) for f in checkpoints]
     
     latest_epoch = max(epochs)
     latest_checkpoint = os.path.join(model_dir, f'crnn_epoch_{latest_epoch}.pt')
     
-    return latest_checkpoint, latest_epoch
+    return model_dir, latest_checkpoint
+    
 
 checkpoint_path, epoch = find_latest_checkpoint(MODEL_DIR)
 if checkpoint_path:
@@ -66,32 +59,26 @@ else:
 
 model.eval()
 
-# Define transform once
 transform = transforms.Compose([
     transforms.Resize((IMG_HEIGHT, IMG_WIDTH)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                     std=[0.229, 0.224, 0.225])
 ])
-# ============================================================
 
 def decode_predictions(outputs, charset):
-    # outputs: (seq_len, batch, num_class)
     outputs = outputs.permute(1, 0, 2)
     predictions = []
     
     for output in outputs:
-        # Get the most likely index for each time step
         pred_indices = output.argmax(dim=1).tolist()
         
         decoded_chars = []
         prev_idx = -1
         
         for idx in pred_indices:
-            # 0 is the CTC Blank token
+            # 0 -> " "
             if idx != 0 and idx != prev_idx:
-                # charset.chars is a list, so index 0 of chars is the 1st actual letter
-                # (since blank is handled separately)
                 decoded_chars.append(charset.chars[idx - 1])
             prev_idx = idx
             
@@ -101,18 +88,14 @@ def decode_predictions(outputs, charset):
 def image_to_text(image):
     """Process a single image and return predicted text"""
     try:
-        # Convert to RGB if needed
         if image.mode != 'RGB':
             image = image.convert('RGB')
         
-        # Transform and add batch dimension
         image_tensor = transform(image).unsqueeze(0).to(DEVICE)
         
-        # Run inference
-        with torch.no_grad():
+        with torch.inference_mode():
             outputs = model(image_tensor)  # (seq_len, 1, num_class)
         
-        # Decode prediction
         prediction = decode_predictions(outputs, charset)
         return prediction[0]
     
@@ -136,11 +119,9 @@ def recognize_text():
     
     filepath = None
     try:
-        # Save the uploaded file
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(filepath)
         
-        # Open and process image
         image = Image.open(filepath)
         text = image_to_text(image)
         
@@ -151,7 +132,6 @@ def recognize_text():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        # Clean up: delete the file after processing
         if filepath and os.path.exists(filepath):
             try:
                 os.remove(filepath)

@@ -1,4 +1,3 @@
-// DOM Elements
 const selectImageBtn = document.getElementById('selectImageBtn');
 const fileInput = document.getElementById('fileInput');
 const recognizeBtn = document.getElementById('recognizeBtn');
@@ -11,7 +10,6 @@ const statusText = document.getElementById('statusText');
 
 let selectedImage = null;
 
-// Event Listeners
 selectImageBtn.addEventListener('click', () => {
     fileInput.click();
 });
@@ -22,7 +20,6 @@ clearBtn.addEventListener('click', handleClear);
 copyBtn.addEventListener('click', handleCopy);
 saveBtn.addEventListener('click', handleSave);
 
-// Handle Image Selection
 function handleImageSelect(event) {
     const file = event.target.files[0];
     
@@ -35,7 +32,6 @@ function handleImageSelect(event) {
     }
 }
 
-// Display Selected Image
 function displayImage(file) {
     const reader = new FileReader();
     
@@ -46,7 +42,6 @@ function displayImage(file) {
     reader.readAsDataURL(file);
 }
 
-// Handle Text Recognition
 function handleRecognizeText() {
     if (!selectedImage) {
         updateStatus('Please select an image first');
@@ -56,11 +51,9 @@ function handleRecognizeText() {
     updateStatus('Recognizing text...');
     recognizeBtn.disabled = true;
     
-    // Create FormData to send the image to the backend
     const formData = new FormData();
     formData.append('image', selectedImage);
     
-    // Send POST request to Flask backend
     fetch('/recognize', {
         method: 'POST',
         body: formData
@@ -83,35 +76,27 @@ function handleRecognizeText() {
     });
 }
 
-// Handle Clear
 function handleClear() {
     selectedImage = null;
     fileInput.value = '';
     imagePreview.innerHTML = `
-        <p class="placeholder-text">No image selected</p>
-        <p class="placeholder-subtext">Click 'Select Image' to get started</p>
+        <p class="placeholder-text">沒有選擇任何圖片</p>
+        <p class="placeholder-subtext">點擊"上傳圖片"以開始</p>
     `;
     recognizedText.value = '';
-    updateStatus('Cleared');
+    updateStatus('已清除');
 }
 
-// Handle Copy
 function handleCopy() {
     if (recognizedText.value) {
         recognizedText.select();
         document.execCommand('copy');
-        updateStatus('Text copied to clipboard');
-        
-        // Alternative modern approach (may require HTTPS)
-        // navigator.clipboard.writeText(recognizedText.value).then(() => {
-        //     updateStatus('Text copied to clipboard');
-        // });
+        updateStatus('文字已複製到剪貼簿');
     } else {
-        updateStatus('No text to copy');
+        updateStatus('沒有可複製的文字');
     }
 }
 
-// Handle Save
 function handleSave() {
     if (recognizedText.value) {
         const blob = new Blob([recognizedText.value], { type: 'text/plain' });
@@ -129,7 +114,6 @@ function handleSave() {
     }
 }
 
-// Update Status Bar
 function updateStatus(message) {
     statusText.textContent = message;
     setTimeout(() => {
@@ -137,7 +121,6 @@ function updateStatus(message) {
     }, 3000);
 }
 
-// Optional: Add drag and drop functionality
 imagePreview.addEventListener('dragover', (e) => {
     e.preventDefault();
     imagePreview.style.borderColor = '#0e639c';

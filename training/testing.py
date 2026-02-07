@@ -147,7 +147,7 @@ if __name__ == "__main__":
     aligner = AlignCollate(img_height=IMG_HEIGHT, img_width=IMG_WIDTH)
 
     transform = transforms.Compose([
-        aligner,  # Direct call to the object's __call__ method
+        aligner,  #  __call__ 
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                             std=[0.229, 0.224, 0.225])

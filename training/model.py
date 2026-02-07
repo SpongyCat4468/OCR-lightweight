@@ -67,14 +67,15 @@ class CRNN(nn.Module):
         return cnn, (output_channel, output_height, output_width)
 
     def forward(self, images):
-        # shape of images: (batch, channel, height, width)
+        # shape: (batch, channel, height, width)
 
         conv = self.cnn(images)
         batch, channel, height, width = conv.size()
 
         # Flatten channel and height -> (batch, channel * height, width)
         conv = conv.view(batch, channel * height, width)
-        # Transpose to (width, batch, channel * height) for sequence processing
+        
+        # Transpose to (width, batch, channel * height) 
         conv = conv.permute(2, 0, 1)
 
         seq = self.map_to_seq(conv)

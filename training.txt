@@ -1,6 +1,0 @@
-Epoch 1/100 - Loss: 1.8960 - LR: 0.000500
-hi
-hi
-hi
-hi
-hi
