@@ -156,3 +156,6 @@ if __name__ == "__main__":
             
         model_path = os.path.join(MODEL_DIR, f'crnn_epoch_{epoch}.pt')
         torch.save(model.state_dict(), model_path)
+
+        with open(file="./training_finetune.txt", mode='a') as f:
+            f.write(f"Epoch {epoch} | Loss: {train_loss}")
