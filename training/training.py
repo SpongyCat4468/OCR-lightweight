@@ -9,7 +9,6 @@ from model import CRNN
 import os
 import glob
 from tqdm import tqdm
-import torchvision.transforms.functional as F
 from PIL import Image
 from torch.utils.data import ConcatDataset
 
@@ -18,7 +17,7 @@ REAL_DATA_PATH = "./IIIT5K"
 SYNTH_DATA_PATH = "SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 1024
-EPOCHS = 100   
+EPOCHS = 200
 MODEL_DIR = './model'
 LEARNING_RATE = 0.000005 
 USE_SCHEDULER = True

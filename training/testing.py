@@ -142,20 +142,23 @@ if __name__ == "__main__":
     print("Loading dataset...")
     dataset = dt.IIIT5KDataset(DATASET_PATH)
 
+    # Create charset FIRST, before applying any transforms
+    # CharsetMapper needs to iterate through raw text labels
+    print("Building character set...")
+    charset = CharsetMapper(dataset)
+    print(f"Charset size: {charset.num_classes}")
+    
+    # Now apply transforms to the dataset
     aligner = AlignCollate(img_height=IMG_HEIGHT, img_width=IMG_WIDTH)
-
-    aligner = AlignCollate(img_height=IMG_HEIGHT, img_width=IMG_WIDTH)
-
     transform = transforms.Compose([
-        aligner,  #  __call__ 
+        aligner,
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                             std=[0.229, 0.224, 0.225])
     ])  
-
     dataset.transform = transform
-    charset = CharsetMapper(dataset)
 
+    # Split dataset
     from torch.utils.data import random_split
     train_size = int(0.95 * len(dataset))
     val_size = len(dataset) - train_size
@@ -163,10 +166,12 @@ if __name__ == "__main__":
 
     print(f"Validation size: {len(val_dataset)}")
 
+    # Create dataloader
     collate_fn = CollateFn(charset)
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, 
                         collate_fn=collate_fn, num_workers=4)
 
+    # Initialize model
     model = CRNN(
         img_channel=3,
         img_height=IMG_HEIGHT,
@@ -174,6 +179,7 @@ if __name__ == "__main__":
         num_class=charset.num_classes
     ).to(DEVICE)
     
+    # Load checkpoint
     checkpoint_path, epoch = find_latest_checkpoint(MODEL_DIR)
     if checkpoint_path:
         print(f"\nLoading model from epoch {epoch}: {checkpoint_path}")
@@ -186,8 +192,10 @@ if __name__ == "__main__":
     print(f"Device: {DEVICE}")
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
 
+    # Test model
     test_model(model, val_loader, charset, DEVICE, num_samples=10)
     
+    # Calculate accuracy
     accuracy, correct, total = calculate_accuracy(model, val_loader, charset, DEVICE)
     
     print(f"\n{'='*80}")

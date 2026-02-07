@@ -46,9 +46,8 @@ def find_latest_checkpoint(model_dir):
     latest_epoch = max(epochs)
     latest_checkpoint = os.path.join(model_dir, f'crnn_epoch_{latest_epoch}.pt')
     
-    return model_dir, latest_checkpoint
+    return latest_checkpoint, latest_epoch
     
-
 checkpoint_path, epoch = find_latest_checkpoint(MODEL_DIR)
 if checkpoint_path:
     print(f"Loading model from epoch {epoch}: {checkpoint_path}")
