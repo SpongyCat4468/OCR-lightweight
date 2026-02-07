@@ -158,4 +158,4 @@ if __name__ == "__main__":
         torch.save(model.state_dict(), model_path)
 
         with open(file="./training_finetune.txt", mode='a') as f:
-            f.write(f"Epoch {epoch} | Loss: {train_loss}\n")
+            f.write(f"Epoch {epoch} | Loss: {train_loss:.4f}\n")
