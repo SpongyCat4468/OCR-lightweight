@@ -17,7 +17,7 @@ REAL_DATA_PATH = "./IIIT5K"
 SYNTH_DATA_PATH = "SynthText_Crops"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 BATCH_SIZE = 1024
-EPOCHS = 200
+EPOCHS = 300
 MODEL_DIR = './model'
 LEARNING_RATE = 0.000005 
 USE_SCHEDULER = True
@@ -158,4 +158,4 @@ if __name__ == "__main__":
         torch.save(model.state_dict(), model_path)
 
         with open(file="./training_finetune.txt", mode='a') as f:
-            f.write(f"Epoch {epoch} | Loss: {train_loss}")
+            f.write(f"Epoch {epoch} | Loss: {train_loss}\n")
