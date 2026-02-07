@@ -248,5 +248,5 @@ Epoch 252/500 - Loss: 0.4052 - LR: 0.000000
 Epoch 253/500 - Loss: 0.3905 - LR: 0.000000
 Epoch 254/500 - Loss: 0.4344 - LR: 0.000000
 
-Epoch 78 | Loss: 0.6603621069546585
-Epoch 79 | Loss: 0.6585632480107821
+Epoch 78 | Loss: 0.6604
+Epoch 79 | Loss: 0.6586
